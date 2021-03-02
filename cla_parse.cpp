@@ -16,9 +16,9 @@ parse_arguments(
     std::string* output_image_filename
 ) {
     cv::String keys =
-        "{@input_image    |<none>| Input Image}"
-        "{@output_image   |<none>| Output Image}"
-        "{help h          |      | Show Help Message}";
+        "{@input_image    |<none>    | Input Image}"
+        "{@output_image   |output.jpg| Output Image}"
+        "{help h          |          | Show Help Message}";
 
     cv::CommandLineParser parser(argc, argv, keys);
 

@@ -9,5 +9,5 @@ x64/
 *.o
 *.gch
 .vscode/settings.json
-images/
+#images/
 out/

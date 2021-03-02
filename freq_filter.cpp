@@ -52,6 +52,8 @@ main(int argc, const char** argv)
     // begin image registration by displaying input
     cv::imshow( WINDOW_NAME + " Input Image", input_image );
 
+    write_img_to_file( input_image, "./out", output_image_filename );
+
     // 'event loop' for keypresses
     while (wait_key());
 
