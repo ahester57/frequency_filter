@@ -31,6 +31,28 @@ wait_key()
 }
 
 
+// Pad image for the optimal DFT size
+cv::Mat
+pad_image(cv::Mat src)
+{
+    int m = cv::getOptimalDFTSize( src.rows );
+    int n = cv::getOptimalDFTSize( src.cols );
+
+    // make padded image
+    cv::Mat padded_image;
+    cv::copyMakeBorder(
+        src,
+        padded_image,
+        0, m - src.rows,
+        0, n - src.cols,
+        cv::BORDER_CONSTANT,
+        cv::Scalar::all(0)
+    );
+    std::cout << "Padded Image size is:\t\t\t" << padded_image.cols << "x" << padded_image.rows << std::endl;
+    return padded_image;
+}
+
+
 int
 main(int argc, const char** argv)
 {
@@ -47,12 +69,15 @@ main(int argc, const char** argv)
     if (parse_result != 1) return parse_result;
 
     // initialize images
-    cv::Mat input_image = open_image(input_image_filename);
+    cv::Mat input_image = open_image(input_image_filename, true);
+
+    // make padded image
+    cv::Mat padded_image = pad_image( input_image );
 
     // begin image registration by displaying input
-    cv::imshow( WINDOW_NAME + " Input Image", input_image );
+    cv::imshow( WINDOW_NAME + " Input Image", padded_image );
 
-    write_img_to_file( input_image, "./out", output_image_filename );
+    write_img_to_file( padded_image, "./out", output_image_filename );
 
     // 'event loop' for keypresses
     while (wait_key());
