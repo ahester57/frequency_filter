@@ -75,10 +75,9 @@ main(int argc, const char** argv)
     cv::Mat padded_image = pad_image( input_image );
 
     // make floating point images, same size as padded, of type float
-    cv::Mat real_part;
-    cv::Mat imaginary_part = cv::Mat::zeros( padded_image.size(), CV_32F );
     // copy input image to real part, leaving imaginary blank
-    padded_image.convertTo( real_part, CV_32F );
+    cv::Mat real_part = cv::Mat_<float>( padded_image );
+    cv::Mat imaginary_part = cv::Mat::zeros( padded_image.size(), CV_32F );
 
     cv::Mat planes[] = { real_part, imaginary_part };
 
@@ -92,8 +91,18 @@ main(int argc, const char** argv)
 
     cv::magnitude( planes[0], planes[1], planes[0] );
 
+    cv::Mat magnitude_image = planes[0];
+
+    magnitude_image += cv::Scalar::all(1);
+    cv::log( magnitude_image, magnitude_image );
+
+    // crop if odd
+    magnitude_image = magnitude_image(
+        cv::Rect( 0, 0, magnitude_image.cols & -2, magnitude_image.rows & -2 )
+    );
+
     // begin image registration by displaying input
-    cv::imshow( WINDOW_NAME + " Input Image", planes[0] );
+    cv::imshow( WINDOW_NAME + " Input Image", magnitude_image );
 
     write_img_to_file( padded_image, "./out", output_image_filename );
 
