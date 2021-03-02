@@ -74,8 +74,26 @@ main(int argc, const char** argv)
     // make padded image
     cv::Mat padded_image = pad_image( input_image );
 
+    // make floating point images, same size as padded, of type float
+    cv::Mat real_part;
+    cv::Mat imaginary_part = cv::Mat::zeros( padded_image.size(), CV_32F );
+    // copy input image to real part, leaving imaginary blank
+    padded_image.convertTo( real_part, CV_32F );
+
+    cv::Mat planes[] = { real_part, imaginary_part };
+
+    cv::Mat complex_image;
+
+    cv::merge( planes, 2, complex_image );
+
+    cv::dft( complex_image, complex_image );
+
+    cv::split( complex_image, planes );
+
+    cv::magnitude( planes[0], planes[1], planes[0] );
+
     // begin image registration by displaying input
-    cv::imshow( WINDOW_NAME + " Input Image", padded_image );
+    cv::imshow( WINDOW_NAME + " Input Image", planes[0] );
 
     write_img_to_file( padded_image, "./out", output_image_filename );
 
@@ -84,6 +102,9 @@ main(int argc, const char** argv)
 
     cv::destroyAllWindows();
     input_image.release();
+    padded_image.release();
+    real_part.release();
+    imaginary_part.release();
 
     return 0;
 }
