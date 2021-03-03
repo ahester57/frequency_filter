@@ -85,12 +85,7 @@ main(int argc, const char** argv)
     // apply inverse fourier transform
     cv::idft( new_complex_image, new_complex_image );
 
-    cv::Mat planes[2];
-    cv::split( new_complex_image, planes );
-
-    cv::Mat normal_real_plane;
-    cv::normalize( planes[0], normal_real_plane, 0, 1, cv::NORM_MINMAX);
-    normal_real_plane.convertTo( normal_real_plane, CV_8U, 255 );
+    cv::Mat normal_real_plane = extract_real_image( new_complex_image );
 
     cv::imshow( WINDOW_NAME + " Fixed Image", normal_real_plane );
     write_img_to_file( normal_real_plane, "./out", output_image_filename );

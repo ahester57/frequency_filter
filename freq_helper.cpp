@@ -105,6 +105,22 @@ apply_magnitude(cv::Mat src, cv::Mat magnitude)
 }
 
 
+// create a normalized real plane image from a thresholded complex image
+cv::Mat
+extract_real_image(cv::Mat src)
+{
+    // split the complex image into planes
+    cv::Mat planes[2];
+    cv::split( src, planes );
+
+    cv::Mat normal_real_plane;
+    cv::normalize( planes[0], normal_real_plane, 0, 1, cv::NORM_MINMAX );
+    normal_real_plane.convertTo( normal_real_plane, CV_8U, 255 );
+
+    return normal_real_plane;
+}
+
+
 // swap images
 void
 swap_mat(cv::Mat* a, cv::Mat* b)

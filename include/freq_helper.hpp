@@ -15,6 +15,7 @@ cv::Mat create_padded_image(cv::Mat src);
 cv::Mat create_complex_image(cv::Mat src);
 cv::Mat create_magnitude_image(cv::Mat src);
 cv::Mat apply_magnitude(cv::Mat src, cv::Mat magnitude);
+cv::Mat extract_real_image(cv::Mat src);
 void swap_mat(cv::Mat* a, cv::Mat* b);
 void swap_quadrants(cv::Mat* src);
 
