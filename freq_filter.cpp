@@ -53,14 +53,10 @@ main(int argc, const char** argv)
 
     cv::imshow( WINDOW_NAME + " Input Image", input_image );
 
-    // make padded image
-    cv::Mat padded_image = pad_image( input_image );
+    // make padded image from input image
+    cv::Mat padded_image = create_padded_image( input_image );
 
-    // crop if odd
-    padded_image = padded_image(
-        cv::Rect( 0, 0, padded_image.cols & -2, padded_image.rows & -2 )
-    );
-
+    // make complex image from padded image
     cv::Mat complex_image = create_complex_image( padded_image );
 
     // apply dft on the complex image
@@ -69,38 +65,19 @@ main(int argc, const char** argv)
     // swap quadrants of complex image
     swap_quadrants( &complex_image );
 
-    // split swapped complex image into real and imaginary
-    cv::Mat planes[] = { cv::Mat::zeros(complex_image.size(), CV_32F), cv::Mat::zeros(complex_image.size(), CV_32F) };
-    cv::split( complex_image, planes );
-
-    // compute magnitude
-    cv::Mat magnitude_image;
-    cv::magnitude( planes[0], planes[1], magnitude_image );
-
-    // normalize magnitude
-    cv::Mat normalized_mag;
-    cv::normalize( magnitude_image, normalized_mag, 0, 1, cv::NORM_MINMAX);
-    normalized_mag.convertTo( normalized_mag, CV_8U, 255 );
+    // make magnitude image from complex image
+    cv::Mat magnitude_image = create_magnitude_image( complex_image );
 
     // display normalized magnitude image
-    cv::imshow( WINDOW_NAME + " Magnitude Image", normalized_mag );
+    cv::imshow( WINDOW_NAME + " Magnitude Image", magnitude_image );
+
+//TODO filter the periodic noise
 
     // 'event loop' for keypresses
     while (wait_key());
 
-    // threshold the image so all non-zero pixels are 1
-    cv::Mat thresholded;
-    cv::threshold( normalized_mag, thresholded, 0, 1, cv::THRESH_BINARY );
-
-    // write_img_to_file_as_text<uint>( thresholded, "./out", output_image_filename );
-
-    // multiply planes of complex images by threshold by applying as mask
-    planes[0].copyTo( planes[0], thresholded );
-    planes[1].copyTo( planes[1], thresholded );
-
-    // and merge them into a new complex image
-    cv::Mat new_complex_image;
-    cv::merge( planes, 2, new_complex_image );
+    // apply magnitude to new complex image
+    cv::Mat new_complex_image = apply_magnitude( complex_image, magnitude_image );
 
     // swap quandrants
     swap_quadrants( &new_complex_image );
@@ -108,6 +85,7 @@ main(int argc, const char** argv)
     // apply inverse fourier transform
     cv::idft( new_complex_image, new_complex_image );
 
+    cv::Mat planes[2];
     cv::split( new_complex_image, planes );
 
     cv::Mat normal_real_plane;
@@ -123,11 +101,9 @@ main(int argc, const char** argv)
     cv::destroyAllWindows();
     input_image.release();
     padded_image.release();
-
     magnitude_image.release();
-    normalized_mag.release();
-    thresholded.release();
     new_complex_image.release();
+    normal_real_plane.release();
 
     return 0;
 }
