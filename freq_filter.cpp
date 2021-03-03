@@ -82,6 +82,8 @@ main(int argc, const char** argv)
     // initialize images
     cv::Mat input_image = open_image(input_image_filename, true);
 
+    cv::imshow( WINDOW_NAME + " Input Image", input_image );
+
     // make padded image
     cv::Mat padded_image = pad_image( input_image );
 
@@ -125,16 +127,43 @@ main(int argc, const char** argv)
     // normalize magnitude
     cv::Mat normalized_mag;
     cv::normalize( magnitude_image, normalized_mag, 0, 1, cv::NORM_MINMAX);
-    normalized_mag *= 255;
-    normalized_mag.convertTo( normalized_mag, CV_8U );
+    normalized_mag.convertTo( normalized_mag, CV_8U, 255 );
+
+    // display normalized magnitude image
+    cv::imshow( WINDOW_NAME + " Normalized Image", normalized_mag );
 
     cv::Mat thresholded;
     cv::threshold( normalized_mag, thresholded, 0, 1, cv::THRESH_BINARY );
 
-    // begin image registration by displaying input
-    cv::imshow( WINDOW_NAME + " Input Image", thresholded );
+    // write_img_to_file_as_text<uint>( thresholded, "./out", output_image_filename );
 
-    write_img_to_file_as_text<uint>( thresholded, "./out", output_image_filename );
+    // multiply planes of complex images by threshold
+
+    // planes[0] *= thresholded;
+    // planes[1] *= thresholded;
+
+    // and merge them
+    cv::Mat new_complex_image;
+    cv::merge( planes, 2, new_complex_image );
+
+    // swap quandrants
+    q0 = cv::Mat( new_complex_image, cv::Rect( 0, 0, center_x, center_y )); // top_left
+    q1 = cv::Mat( new_complex_image, cv::Rect( center_x, 0, center_x, center_y )); // top_right
+    q2 = cv::Mat( new_complex_image, cv::Rect( 0, center_y, center_x, center_y )); // bottom_left
+    q3 = cv::Mat( new_complex_image, cv::Rect( center_x, center_y, center_x, center_y )); // bottom_right
+
+    swap_mat( &q0, &q3 );
+    swap_mat( &q1, &q2 );
+    cv::idft( new_complex_image, new_complex_image );
+
+    cv::split( new_complex_image, planes );
+
+    cv::Mat normal_real_plane;
+    cv::normalize( planes[0], normal_real_plane, 0, 1, cv::NORM_MINMAX);
+    normal_real_plane.convertTo( normal_real_plane, CV_8U, 255 );
+
+    cv::imshow( WINDOW_NAME + " Fixed Image", normal_real_plane );
+    write_img_to_file( normal_real_plane, "./out", output_image_filename );
 
     // 'event loop' for keypresses
     while (wait_key());
@@ -147,6 +176,11 @@ main(int argc, const char** argv)
     magnitude_image.release();
     normalized_mag.release();
     thresholded.release();
+    new_complex_image.release();
+    q0.release();
+    q1.release();
+    q2.release();
+    q3.release();
 
     return 0;
 }
