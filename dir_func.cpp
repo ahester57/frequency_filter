@@ -108,6 +108,7 @@ write_img_to_file(cv::Mat image, std::string output_dir, std::string file_name)
     return 1;
 }
 
+template <typename T>
 int
 write_img_to_file_as_text(cv::Mat image, std::string output_dir, std::string file_name)
 {
@@ -120,7 +121,7 @@ write_img_to_file_as_text(cv::Mat image, std::string output_dir, std::string fil
         of.open(dst_file);
         for (int i = 0; i < image.size().height; i++) {
             for (int j = 0; j < image.size().width; j++) {
-                of << image.at<float>(i, j) << " ";
+                of << image.at<T>(i, j) << " ";
             }
             if (i < image.size().height - 1) of << std::endl;
         }
@@ -140,3 +141,6 @@ write_img_to_file_as_text(cv::Mat image, std::string output_dir, std::string fil
     }
     return 1;
 }
+
+template int write_img_to_file_as_text<uint>(cv::Mat image, std::string output_dir, std::string file_name);
+template int write_img_to_file_as_text<float>(cv::Mat image, std::string output_dir, std::string file_name);

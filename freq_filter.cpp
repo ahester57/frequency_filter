@@ -126,13 +126,12 @@ main(int argc, const char** argv)
     cv::Mat normalized_mag;
     cv::normalize( magnitude_image, normalized_mag, 0, 1, cv::NORM_MINMAX);
     normalized_mag *= 255;
-
     normalized_mag.convertTo( normalized_mag, CV_8U );
 
     // begin image registration by displaying input
     cv::imshow( WINDOW_NAME + " Input Image", normalized_mag );
 
-    write_img_to_file( normalized_mag, "./out", output_image_filename );
+    write_img_to_file_as_text<uint>( thresholded, "./out", output_image_filename );
 
     // 'event loop' for keypresses
     while (wait_key());

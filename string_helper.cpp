@@ -4,6 +4,7 @@
 // g++.exe (x86_64-posix-seh-rev0, Built by MinGW-W64 project) 8.1.0
 
 #include <opencv2/core/core.hpp>
+
 #include <sstream>
 
 #include "./include/string_helper.hpp"
@@ -24,11 +25,12 @@ split (std::string s, char delim)
 }
 
 std::string
-cv_type_to_str(int type, uint8_t channels)
+cv_type_to_str(cv::Mat img)
 {
+    int type = img.type();
+    uint8_t channels = img.channels();
     // cred: https://stackoverflow.com/a/17820615
     std::string r;
-
     uchar depth = type & CV_MAT_DEPTH_MASK;
     uchar chans = 1 + (type >> CV_CN_SHIFT);
 

@@ -5,10 +5,12 @@
 #ifndef STRING_HELPER_H
 #define STRING_HELPER_H
 
+#include <opencv2/core/core.hpp>
+
 #include <vector>
 #include <iostream>
 
 std::vector<std::string> split (std::string s, char delim);
-std::string cv_type_to_str(int type, uint8_t channels);
+std::string cv_type_to_str(cv::Mat img);
 
 #endif

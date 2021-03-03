@@ -15,6 +15,7 @@ cv::Mat open_image(std::string file_path, bool grayscale = false);
 void open_image_from_text(std::string file_path, cv::Mat* dst);
 int create_dir_recursive(std::string dst_file);
 int write_img_to_file(cv::Mat image, std::string output_dir, std::string file_name);
+template <typename T>
 int write_img_to_file_as_text(cv::Mat image, std::string output_dir, std::string file_name);
 
 #endif
