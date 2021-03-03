@@ -62,9 +62,6 @@ main(int argc, const char** argv)
     // apply dft on the complex image
     cv::dft( complex_image, complex_image );
 
-    // swap quadrants of complex image
-    swap_quadrants( &complex_image );
-
     // make magnitude image from complex image
     cv::Mat magnitude_image = create_magnitude_image( complex_image );
 
@@ -78,9 +75,6 @@ main(int argc, const char** argv)
 
     // apply magnitude to new complex image
     cv::Mat new_complex_image = apply_magnitude( complex_image, magnitude_image );
-
-    // swap quandrants
-    swap_quadrants( &new_complex_image );
 
     // apply inverse fourier transform
     cv::idft( new_complex_image, new_complex_image );

@@ -64,6 +64,9 @@ create_complex_image(cv::Mat src)
 cv::Mat
 create_magnitude_image(cv::Mat src)
 {
+    // swap quadrants of complex image
+    swap_quadrants( &src );
+
     // split swapped complex image into real and imaginary
     cv::Mat planes[2];
     cv::split( src, planes );
@@ -99,6 +102,9 @@ apply_magnitude(cv::Mat src, cv::Mat magnitude)
     // and merge them into a new complex image
     cv::Mat complex_image;
     cv::merge( planes, 2, complex_image );
+
+    // swap quandrants
+    swap_quadrants( &complex_image );
 
     thresholded.release();
     return complex_image;
