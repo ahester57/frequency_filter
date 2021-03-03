@@ -138,9 +138,8 @@ main(int argc, const char** argv)
     // write_img_to_file_as_text<uint>( thresholded, "./out", output_image_filename );
 
     // multiply planes of complex images by threshold
-
-    // planes[0] *= thresholded;
-    // planes[1] *= thresholded;
+    planes[0].copyTo( planes[0], thresholded );
+    planes[1].copyTo( planes[1], thresholded );
 
     // and merge them
     cv::Mat new_complex_image;
