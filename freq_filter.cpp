@@ -11,8 +11,10 @@
 
 #include "./include/cla_parse.hpp"
 #include "./include/dir_func.hpp"
+#include "./include/freq_helper.hpp"
 
 #define DEBUG 1
+
 
 const std::string WINDOW_NAME = "Frequency Domain Filtering";
 
@@ -28,39 +30,6 @@ wait_key()
         return 0;
     }
     return 1;
-}
-
-
-// Pad image for the optimal DFT size
-cv::Mat
-pad_image(cv::Mat src)
-{
-    int m = cv::getOptimalDFTSize( src.rows );
-    int n = cv::getOptimalDFTSize( src.cols );
-
-    // make padded image
-    cv::Mat padded_image;
-    cv::copyMakeBorder(
-        src,
-        padded_image,
-        0, m - src.rows,
-        0, n - src.cols,
-        cv::BORDER_CONSTANT,
-        cv::Scalar::all(0)
-    );
-    std::cout << "Padded Image size is:\t\t\t" << padded_image.cols << "x" << padded_image.rows << std::endl;
-    return padded_image;
-}
-
-
-// swap quandrants
-void
-swap_mat(cv::Mat* a, cv::Mat* b)
-{
-    cv::Mat tmp;
-    a->copyTo(tmp);
-    b->copyTo(*a);
-    tmp.copyTo(*b);
 }
 
 
@@ -80,7 +49,7 @@ main(int argc, const char** argv)
     if (parse_result != 1) return parse_result;
 
     // initialize images
-    cv::Mat input_image = open_image(input_image_filename, true);
+    cv::Mat input_image = open_image( input_image_filename, true );
 
     cv::imshow( WINDOW_NAME + " Input Image", input_image );
 
@@ -92,32 +61,16 @@ main(int argc, const char** argv)
         cv::Rect( 0, 0, padded_image.cols & -2, padded_image.rows & -2 )
     );
 
-    // make floating point images, same size as padded, of type float
-    // copy input image to real part, leaving imaginary blank
-    cv::Mat real_part = cv::Mat_<float>( padded_image );
-    cv::Mat imaginary_part = cv::Mat::zeros( padded_image.size(), CV_32F );
-
-    // make a complex image using the real and imaginary parts
-    cv::Mat planes[] = { real_part, imaginary_part };
-    cv::Mat complex_image;
-    cv::merge( planes, 2, complex_image );
+    cv::Mat complex_image = create_complex_image( padded_image );
 
     // apply dft on the complex image
     cv::dft( complex_image, complex_image );
 
-    int center_x = complex_image.cols / 2;
-    int center_y = complex_image.rows / 2;
-
-    cv::Mat q0( complex_image, cv::Rect( 0, 0, center_x, center_y )); // top_left
-    cv::Mat q1( complex_image, cv::Rect( center_x, 0, center_x, center_y )); // top_right
-    cv::Mat q2( complex_image, cv::Rect( 0, center_y, center_x, center_y )); // bottom_left
-    cv::Mat q3( complex_image, cv::Rect( center_x, center_y, center_x, center_y )); // bottom_right
-
-    // swap quandrants
-    swap_mat( &q0, &q3 );
-    swap_mat( &q1, &q2 );
+    // swap quadrants of complex image
+    swap_quadrants( &complex_image );
 
     // split swapped complex image into real and imaginary
+    cv::Mat planes[] = { cv::Mat::zeros(complex_image.size(), CV_32F), cv::Mat::zeros(complex_image.size(), CV_32F) };
     cv::split( complex_image, planes );
 
     // compute magnitude
@@ -150,13 +103,9 @@ main(int argc, const char** argv)
     cv::merge( planes, 2, new_complex_image );
 
     // swap quandrants
-    q0 = cv::Mat( new_complex_image, cv::Rect( 0, 0, center_x, center_y )); // top_left
-    q1 = cv::Mat( new_complex_image, cv::Rect( center_x, 0, center_x, center_y )); // top_right
-    q2 = cv::Mat( new_complex_image, cv::Rect( 0, center_y, center_x, center_y )); // bottom_left
-    q3 = cv::Mat( new_complex_image, cv::Rect( center_x, center_y, center_x, center_y )); // bottom_right
+    swap_quadrants( &new_complex_image );
 
-    swap_mat( &q0, &q3 );
-    swap_mat( &q1, &q2 );
+    // apply inverse fourier transform
     cv::idft( new_complex_image, new_complex_image );
 
     cv::split( new_complex_image, planes );
@@ -174,16 +123,11 @@ main(int argc, const char** argv)
     cv::destroyAllWindows();
     input_image.release();
     padded_image.release();
-    real_part.release();
-    imaginary_part.release();
+
     magnitude_image.release();
     normalized_mag.release();
     thresholded.release();
     new_complex_image.release();
-    q0.release();
-    q1.release();
-    q2.release();
-    q3.release();
 
     return 0;
 }
