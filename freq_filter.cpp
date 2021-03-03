@@ -53,6 +53,17 @@ pad_image(cv::Mat src)
 }
 
 
+// swap quandrants
+void
+swap_mat(cv::Mat* a, cv::Mat* b)
+{
+    cv::Mat tmp;
+    a->copyTo(tmp);
+    b->copyTo(*a);
+    tmp.copyTo(*b);
+}
+
+
 int
 main(int argc, const char** argv)
 {
@@ -74,37 +85,51 @@ main(int argc, const char** argv)
     // make padded image
     cv::Mat padded_image = pad_image( input_image );
 
+    // crop if odd
+    padded_image = padded_image(
+        cv::Rect( 0, 0, padded_image.cols & -2, padded_image.rows & -2 )
+    );
+
     // make floating point images, same size as padded, of type float
     // copy input image to real part, leaving imaginary blank
     cv::Mat real_part = cv::Mat_<float>( padded_image );
     cv::Mat imaginary_part = cv::Mat::zeros( padded_image.size(), CV_32F );
 
+    // make a complex image using the real and imaginary parts
     cv::Mat planes[] = { real_part, imaginary_part };
-
     cv::Mat complex_image;
-
     cv::merge( planes, 2, complex_image );
 
+    // apply dft on the complex image
     cv::dft( complex_image, complex_image );
 
+    int center_x = complex_image.cols / 2;
+    int center_y = complex_image.rows / 2;
+
+    cv::Mat q0( complex_image, cv::Rect( 0, 0, center_x, center_y )); // top_left
+    cv::Mat q1( complex_image, cv::Rect( center_x, 0, center_x, center_y )); // top_right
+    cv::Mat q2( complex_image, cv::Rect( 0, center_y, center_x, center_y )); // bottom_left
+    cv::Mat q3( complex_image, cv::Rect( center_x, center_y, center_x, center_y )); // bottom_right
+
+    // swap quandrants
+    swap_mat( &q0, &q3 );
+    swap_mat( &q1, &q2 );
+
+    // split swapped complex image into real and imaginary
     cv::split( complex_image, planes );
 
-    cv::magnitude( planes[0], planes[1], planes[0] );
+    // compute magnitude
+    cv::Mat magnitude_image;
+    cv::magnitude( planes[0], planes[1], magnitude_image );
 
-    cv::Mat magnitude_image = planes[0];
-
-    magnitude_image += cv::Scalar::all(1);
-    cv::log( magnitude_image, magnitude_image );
-
-    // crop if odd
-    magnitude_image = magnitude_image(
-        cv::Rect( 0, 0, magnitude_image.cols & -2, magnitude_image.rows & -2 )
-    );
+    // normalize magnitude
+    cv::Mat normalized_mag;
+    cv::normalize( magnitude_image, normalized_mag, 0, 1, cv::NORM_MINMAX);
 
     // begin image registration by displaying input
-    cv::imshow( WINDOW_NAME + " Input Image", magnitude_image );
+    cv::imshow( WINDOW_NAME + " Input Image", normalized_mag );
 
-    write_img_to_file( padded_image, "./out", output_image_filename );
+    write_img_to_file( normalized_mag, "./out", output_image_filename );
 
     // 'event loop' for keypresses
     while (wait_key());
@@ -114,6 +139,8 @@ main(int argc, const char** argv)
     padded_image.release();
     real_part.release();
     imaginary_part.release();
+    magnitude_image.release();
+    normalized_mag.release();
 
     return 0;
 }
