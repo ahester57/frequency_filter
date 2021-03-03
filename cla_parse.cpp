@@ -16,9 +16,9 @@ parse_arguments(
     std::string* output_image_filename
 ) {
     cv::String keys =
-        "{@input_image    |<none>    | Input Image}"
-        "{@output_image   |output.jpg| Output Image}"
-        "{help h          |          | Show Help Message}";
+        "{@input_image    |<none>| Input Image}"
+        "{@output_image   |<none>| Output Image}"
+        "{help h          |      | Show Help Message}";
 
     cv::CommandLineParser parser(argc, argv, keys);
 
@@ -43,6 +43,9 @@ parse_arguments(
 
     try {
         *output_image_filename = (std::string) parser.get<std::string>(1).c_str();
+        if (output_image_filename->size() == 0) {
+            *output_image_filename = "filtered_" + *input_image_filename;
+        }
     } catch (...) {
         std::cerr << "Failed to parse templatefile argument!:" << std::endl;
         return -1;
