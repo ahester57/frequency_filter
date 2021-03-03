@@ -128,8 +128,11 @@ main(int argc, const char** argv)
     normalized_mag *= 255;
     normalized_mag.convertTo( normalized_mag, CV_8U );
 
+    cv::Mat thresholded;
+    cv::threshold( normalized_mag, thresholded, 0, 1, cv::THRESH_BINARY );
+
     // begin image registration by displaying input
-    cv::imshow( WINDOW_NAME + " Input Image", normalized_mag );
+    cv::imshow( WINDOW_NAME + " Input Image", thresholded );
 
     write_img_to_file_as_text<uint>( thresholded, "./out", output_image_filename );
 
@@ -143,6 +146,7 @@ main(int argc, const char** argv)
     imaginary_part.release();
     magnitude_image.release();
     normalized_mag.release();
+    thresholded.release();
 
     return 0;
 }
