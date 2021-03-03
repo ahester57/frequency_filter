@@ -55,9 +55,11 @@ main(int argc, const char** argv)
 
     // make padded image from input image
     cv::Mat padded_image = create_padded_image( input_image );
+    input_image.release();
 
     // make complex image from padded image
     cv::Mat complex_image = create_complex_image( padded_image );
+    padded_image.release();
 
     // apply dft on the complex image
     cv::dft( complex_image, complex_image );
@@ -75,11 +77,14 @@ main(int argc, const char** argv)
 
     // apply magnitude to new complex image
     cv::Mat new_complex_image = apply_magnitude( complex_image, magnitude_image );
+    complex_image.release();
+    magnitude_image.release();
 
     // apply inverse fourier transform
     cv::idft( new_complex_image, new_complex_image );
 
     cv::Mat normal_real_plane = extract_real_image( new_complex_image );
+    new_complex_image.release();
 
     cv::imshow( WINDOW_NAME + " Fixed Image", normal_real_plane );
     write_img_to_file( normal_real_plane, "./out", output_image_filename );
@@ -88,10 +93,6 @@ main(int argc, const char** argv)
     while (wait_key());
 
     cv::destroyAllWindows();
-    input_image.release();
-    padded_image.release();
-    magnitude_image.release();
-    new_complex_image.release();
     normal_real_plane.release();
 
     return 0;
