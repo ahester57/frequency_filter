@@ -130,18 +130,22 @@ main(int argc, const char** argv)
     normalized_mag.convertTo( normalized_mag, CV_8U, 255 );
 
     // display normalized magnitude image
-    cv::imshow( WINDOW_NAME + " Normalized Image", normalized_mag );
+    cv::imshow( WINDOW_NAME + " Magnitude Image", normalized_mag );
 
+    // 'event loop' for keypresses
+    while (wait_key());
+
+    // threshold the image so all non-zero pixels are 1
     cv::Mat thresholded;
     cv::threshold( normalized_mag, thresholded, 0, 1, cv::THRESH_BINARY );
 
     // write_img_to_file_as_text<uint>( thresholded, "./out", output_image_filename );
 
-    // multiply planes of complex images by threshold
+    // multiply planes of complex images by threshold by applying as mask
     planes[0].copyTo( planes[0], thresholded );
     planes[1].copyTo( planes[1], thresholded );
 
-    // and merge them
+    // and merge them into a new complex image
     cv::Mat new_complex_image;
     cv::merge( planes, 2, new_complex_image );
 
