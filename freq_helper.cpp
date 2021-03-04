@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "./include/freq_helper.hpp"
+    #include "./include/dir_func.hpp"
+    #include "./include/string_helper.hpp"
 
 
 // Pad image for the optimal DFT size
@@ -46,68 +48,70 @@ create_complex_image(cv::Mat src)
 {
     // make floating point images, same size as padded, of type float
     // copy input image to real part, leaving imaginary blank
-    cv::Mat real_part = cv::Mat_<float>( src );
-    cv::Mat imaginary_part = cv::Mat::zeros( src.size(), CV_32F );
-
-    // make a complex image using the real and imaginary parts
-    cv::Mat planes[] = { real_part, imaginary_part };
+    cv::Mat planes[] = { cv::Mat_<float>( src ), cv::Mat::zeros( src.size(), CV_32F ) };
     cv::Mat complex_image;
     cv::merge( planes, 2, complex_image );
 
-    real_part.release();
-    imaginary_part.release();
     return complex_image;
 }
 
 
 // create a normalized magnitude image from complex image
 cv::Mat
-create_magnitude_image(cv::Mat src)
+create_magnitude_image(cv::Mat* src)
 {
     // swap quadrants of complex image
-    swap_quadrants( &src );
+    swap_quadrants( src );
 
     // split swapped complex image into real and imaginary
     cv::Mat planes[2];
-    cv::split( src, planes );
+    cv::split( *src, planes );
 
     // compute magnitude
     cv::Mat magnitude_image;
     cv::magnitude( planes[0], planes[1], magnitude_image );
 
     // normalize magnitude
-    cv::Mat normalized_mag;
-    cv::normalize( magnitude_image, normalized_mag, 0, 1, cv::NORM_MINMAX);
-    normalized_mag.convertTo( normalized_mag, CV_8U, 255 );
+    cv::normalize( magnitude_image, magnitude_image, 0, 1, cv::NORM_MINMAX);
+    magnitude_image.convertTo( magnitude_image, CV_8U, 255 );
 
-    magnitude_image.release();
-    return normalized_mag;
+    return magnitude_image;
 }
 
 
 // apply thresholded magnitude image to complex image
 cv::Mat
-apply_magnitude(cv::Mat src, cv::Mat magnitude)
+apply_magnitude(cv::Mat* src, cv::Mat magnitude)
 {
     // threshold the magnitude image so all non-zero pixels are 1
+        cv::imshow( " magnitude Image", magnitude );
+
     cv::Mat thresholded;
+    magnitude.copyTo(thresholded);
     cv::threshold( magnitude, thresholded, 0, 1, cv::THRESH_BINARY );
 
+    cv::imshow( " threshold Image", thresholded );
     // multiply planes of complex images by threshold by applying as mask
     cv::Mat planes[2];
-    cv::split( src, planes );
-    planes[0].copyTo( planes[0], thresholded );
-    planes[1].copyTo( planes[1], thresholded );
+    cv::split( *src, planes );
+
+    // planes[0].copyTo( planes[0], cv::Mat::zeros(planes[0].size(), CV_8U) );
+    cv::Mat real;
+    // cv::bitwise_and( planes[0], cv::Mat::zeros(planes[0].size(), CV_32F), real );
+    cv::Mat img;
+    cv::bitwise_and( planes[0], cv::Mat_<float>( thresholded ), real );
+    cv::bitwise_and( planes[1], cv::Mat_<float>( thresholded ), img );
+    write_img_to_file_as_text<float>( cv::Mat_<float>( thresholded ) , "./out", "threhs.tif");
 
     // and merge them into a new complex image
-    cv::Mat complex_image;
-    cv::merge( planes, 2, complex_image );
+    cv::Mat planes2[] = { real, img };
+    cv::merge( planes2, 2, *src );
 
     // swap quandrants
-    swap_quadrants( &complex_image );
+    swap_quadrants( src );
 
     thresholded.release();
-    return complex_image;
+    return *src;
 }
 
 
