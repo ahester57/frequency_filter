@@ -70,7 +70,21 @@ main(int argc, const char** argv)
     // display normalized magnitude image
     cv::imshow( WINDOW_NAME + " Magnitude Image", magnitude_image );
 
-//TODO filter the periodic noise
+    // filter the periodic noise
+    cv::Mat canny_output;
+    cv::blur( magnitude_image, canny_output, cv::Size(3,3) );
+    cv::Canny( canny_output, canny_output, 0, 1 );
+
+    std::vector<std::vector<cv::Point>> contours;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::findContours( canny_output, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );
+
+    cv::Mat canvas = cv::Mat::zeros( canny_output.size(), CV_8U );
+    for (size_t i = 0; i < contours.size(); i++) {
+        cv::drawContours( canvas, contours, i, cv::Scalar(255), 1, cv::LINE_8, hierarchy, 0 );
+    }
+    cv::imshow( WINDOW_NAME + " Contours Image", canvas );
+    write_img_to_file( canvas, "./out", "contours_" + output_image_filename);
 
     // 'event loop' for keypresses
     while (wait_key());
