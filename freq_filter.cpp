@@ -69,7 +69,7 @@ frequency_filter(cv::Mat magnitude_image)
     cv::Mat mask = cv::Mat( canny_output.size(), CV_8U );
     mask = cv::Scalar::all(0);
     cv::circle( mask, cv::Point( mask.cols/2, mask.rows/2 ), 75, cv::Scalar(255), cv::FILLED );
-    cv::circle( mask, cv::Point( mask.cols/2, mask.rows/2 ), 10, cv::Scalar(0), cv::FILLED );
+    // cv::circle( mask, cv::Point( mask.cols/2, mask.rows/2 ), 10, cv::Scalar(0), cv::FILLED );
     cv::imshow( WINDOW_NAME + " af Image", mask );
 
     // apply the mask to magnitude image
@@ -127,28 +127,8 @@ main(int argc, const char** argv)
     while (wait_key());
 
     // apply magnitude to new complex image
-    // cv::Mat planes[2];
-    // cv::split( complex_image, planes );
-    // cv::imshow("1", planes[0]);
     complex_image = apply_magnitude( &complex_image, freq_filter_image );
-    // cv::split( new_complex_image, planes );
-    // cv::imshow("2", planes[0]);
     freq_filter_image.release();
-
-            // // make magnitude image from complex image
-            //     magnitude_image = create_magnitude_image( new_complex_image );
-            //         freq_filter_image = frequency_filter( magnitude_image );
-
-            //     new_complex_image = apply_magnitude( new_complex_image, freq_filter_image );
-
-            // //     // display normalized magnitude image
-            //     cv::imshow( WINDOW_NAME + " Magnitude Image2", magnitude_image );
-
-            // //     // filter the periodic noise
-            // //     freq_filter_image = frequency_filter( magnitude_image );
-            // //     magnitude_image.release();
-
-            //     cv::imshow( WINDOW_NAME + " Frequency Mask2", freq_filter_image );
 
     // apply inverse fourier transform
     cv::idft( complex_image, complex_image );
