@@ -67,9 +67,9 @@ frequency_filter(cv::Mat magnitude_image)
 {
     cv::Mat canny_output = draw_canny_contours( magnitude_image );
     cv::Mat mask = cv::Mat( canny_output.size(), CV_8U );
-    mask = cv::Scalar::all(255);
-    cv::circle( mask, cv::Point( mask.cols/2, mask.rows/2 ), 75, cv::Scalar(0), cv::FILLED );
-    cv::circle( mask, cv::Point( mask.cols/2, mask.rows/2 ), 5, cv::Scalar(255), cv::FILLED );
+    mask = cv::Scalar::all(0);
+    cv::circle( mask, cv::Point( mask.cols/2, mask.rows/2 ), 75, cv::Scalar(255), cv::FILLED );
+    cv::circle( mask, cv::Point( mask.cols/2, mask.rows/2 ), 10, cv::Scalar(0), cv::FILLED );
     cv::imshow( WINDOW_NAME + " af Image", mask );
 
     // apply the mask to magnitude image
