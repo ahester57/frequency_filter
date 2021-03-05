@@ -84,22 +84,20 @@ cv::Mat
 apply_magnitude(cv::Mat* src, cv::Mat magnitude)
 {
     // threshold the magnitude image so all non-zero pixels are 1
-        cv::imshow( " magnitude Image", magnitude );
-
     cv::Mat thresholded;
     magnitude.copyTo(thresholded);
     cv::threshold( magnitude, thresholded, 0, 1, cv::THRESH_BINARY );
 
-    cv::imshow( " threshold Image", thresholded );
     // multiply planes of complex images by threshold by applying as mask
     cv::Mat planes[2];
     cv::split( *src, planes );
 
     // planes[0].copyTo( planes[0], cv::Mat::zeros(planes[0].size(), CV_8U) );
     cv::Mat real;
+    planes[0].copyTo( real , thresholded );
     // cv::bitwise_and( planes[0], cv::Mat::zeros(planes[0].size(), CV_32F), real );
     cv::Mat img;
-    cv::bitwise_and( planes[0], cv::Mat_<float>( thresholded ), real );
+    // cv::bitwise_and( planes[0], cv::Mat_<float>( thresholded ), real );
     cv::bitwise_and( planes[1], cv::Mat_<float>( thresholded ), img );
     write_img_to_file_as_text<float>( cv::Mat_<float>( thresholded ) , "./out", "threhs.tif");
 

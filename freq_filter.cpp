@@ -42,7 +42,7 @@ draw_canny_contours(cv::Mat magnitude_image)
     cv::Mat canny_output;
     magnitude_image.copyTo( canny_output );
     // cv::blur( magnitude_image, canny_output, cv::Size(1,1) );
-    cv::Canny( canny_output, canny_output, 0, 1 );
+    cv::Canny( canny_output, canny_output, 0.034, 0.01 );
 
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Vec4i> hierarchy;
@@ -66,9 +66,10 @@ cv::Mat
 frequency_filter(cv::Mat magnitude_image)
 {
     cv::Mat canny_output = draw_canny_contours( magnitude_image );
-    cv::Mat mask = cv::Mat::ones( canny_output.size(), CV_8U );
+    cv::Mat mask = cv::Mat( canny_output.size(), CV_8U );
+    mask = cv::Scalar::all(255);
     cv::circle( mask, cv::Point( mask.cols/2, mask.rows/2 ), 75, cv::Scalar(0), cv::FILLED );
-    cv::circle( mask, cv::Point( mask.cols/2, mask.rows/2 ), 10, cv::Scalar(255), cv::FILLED );
+    cv::circle( mask, cv::Point( mask.cols/2, mask.rows/2 ), 5, cv::Scalar(255), cv::FILLED );
     cv::imshow( WINDOW_NAME + " af Image", mask );
 
     // apply the mask to magnitude image
