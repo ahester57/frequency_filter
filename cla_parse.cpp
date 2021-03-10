@@ -14,11 +14,15 @@ parse_arguments(
     const char** argv,
     std::string* input_image_filename,
     std::string* output_image_filename,
+    bool* double_input_size,
+    bool* blur_output,
     bool* equalize_output
 ) {
     cv::String keys =
         "{@input_image    |<none>| Input Image}"
         "{@output_image   |<none>| Output Image}"
+        "{double d        |      | Double Input Image Size}"
+        "{blur b          |      | Blur Output Image}"
         "{equalize e      |      | Equalize Output Image}"
         "{help h          |      | Show Help Message}";
 
@@ -54,11 +58,26 @@ parse_arguments(
     }
 
     try {
+        *double_input_size = parser.has("d");
+    } catch (...) {
+        std::cerr << "Failed to parse double argument!:" << std::endl;
+        return -1;
+    }
+
+    try {
+        *blur_output = parser.has("b");
+    } catch (...) {
+        std::cerr << "Failed to parse blur argument!:" << std::endl;
+        return -1;
+    }
+
+    try {
         *equalize_output = parser.has("e");
     } catch (...) {
         std::cerr << "Failed to parse equalize argument!:" << std::endl;
         return -1;
     }
+
     std::cout << std::endl << "Shortcuts:" << std::endl << "\tq\t- quit" << std::endl << std::endl;
 
     return 1;

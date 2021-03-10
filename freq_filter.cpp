@@ -89,6 +89,8 @@ main(int argc, const char** argv)
 {
     // CLA variables
     std::string input_image_filename;
+    bool double_input_size;
+    bool blur_output;
     bool equalize_output;
 
     // parse and save command line args
@@ -96,16 +98,33 @@ main(int argc, const char** argv)
         argc, argv,
         &input_image_filename,
         &output_image_filename,
+        &double_input_size,
+        &blur_output,
         &equalize_output
     );
     if (parse_result != 1) return parse_result;
 
     cv::Mat input_image = open_image( input_image_filename, true );
-    // cv::resize( input_image, input_image, input_image.size() * 2);
+
+    // double the input size if given 'd' flag
+    if (double_input_size) {
+        cv::resize( input_image, input_image, input_image.size() * 2);
+    }
+
     cv::imshow( WINDOW_NAME + " Input Image", input_image );
 
     cv::Mat filtered_image = filter_frequency_from_image( input_image );
 
+    // blur the output if given 'b' flag
+    if (blur_output) {
+        cv::Mat blurred_filtered;
+        cv::GaussianBlur( filtered_image, blurred_filtered, cv::Size(3, 3), 3 );
+        cv::addWeighted( filtered_image, 1.5, blurred_filtered, -0.3, 0, blurred_filtered );
+        cv::equalizeHist( blurred_filtered, filtered_image );
+        blurred_filtered.release();
+    }
+
+    // equalize the output if given 'e' flag
     if (equalize_output) {
         cv::equalizeHist( filtered_image, filtered_image );
     }
