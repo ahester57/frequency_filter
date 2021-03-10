@@ -89,12 +89,14 @@ main(int argc, const char** argv)
 {
     // CLA variables
     std::string input_image_filename;
+    bool equalize_output;
 
     // parse and save command line args
     int parse_result = parse_arguments(
         argc, argv,
         &input_image_filename,
-        &output_image_filename
+        &output_image_filename,
+        &equalize_output
     );
     if (parse_result != 1) return parse_result;
 
@@ -103,6 +105,10 @@ main(int argc, const char** argv)
     cv::imshow( WINDOW_NAME + " Input Image", input_image );
 
     cv::Mat filtered_image = filter_frequency_from_image( input_image );
+
+    if (equalize_output) {
+        cv::equalizeHist( filtered_image, filtered_image );
+    }
 
     cv::imshow( WINDOW_NAME + " Fixed Image", filtered_image );
     write_img_to_file( filtered_image, "./out", output_image_filename );

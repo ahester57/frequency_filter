@@ -12,7 +12,8 @@ int parse_arguments(
     int argc,
     const char** argv,
     std::string* input_image_filename,
-    std::string* output_image_filename
+    std::string* output_image_filename,
+    bool* equalize_output
 );
 
 #endif

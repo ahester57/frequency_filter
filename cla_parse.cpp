@@ -13,11 +13,13 @@ parse_arguments(
     int argc,
     const char** argv,
     std::string* input_image_filename,
-    std::string* output_image_filename
+    std::string* output_image_filename,
+    bool* equalize_output
 ) {
     cv::String keys =
         "{@input_image    |<none>| Input Image}"
         "{@output_image   |<none>| Output Image}"
+        "{equalize e      |      | Equalize Output Image}"
         "{help h          |      | Show Help Message}";
 
     cv::CommandLineParser parser(argc, argv, keys);
@@ -51,6 +53,12 @@ parse_arguments(
         return -1;
     }
 
+    try {
+        *equalize_output = parser.has("e");
+    } catch (...) {
+        std::cerr << "Failed to parse equalize argument!:" << std::endl;
+        return -1;
+    }
     std::cout << std::endl << "Shortcuts:" << std::endl << "\tq\t- quit" << std::endl << std::endl;
 
     return 1;
