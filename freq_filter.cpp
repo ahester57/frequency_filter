@@ -76,8 +76,8 @@ filter_frequency_from_image(cv::Mat image)
     cv::idft( complex_image, complex_image );
 
     // extract real plane and crop to size of original
-    cv::Mat normal_real_plane = extract_real_image( complex_image ) // @
-        ( cv::Rect( input_image_size, cv::Point(0, 0) ) );
+    cv::Mat normal_real_plane = extract_real_image( complex_image );
+        //@ ( cv::Rect( input_image_size, cv::Point(0, 0) ) );
 
     complex_image.release();
     return normal_real_plane;
@@ -99,6 +99,7 @@ main(int argc, const char** argv)
     if (parse_result != 1) return parse_result;
 
     cv::Mat input_image = open_image( input_image_filename, true );
+    // cv::resize( input_image, input_image, input_image.size() * 2);
     cv::imshow( WINDOW_NAME + " Input Image", input_image );
 
     cv::Mat filtered_image = filter_frequency_from_image( input_image );
