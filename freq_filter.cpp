@@ -42,7 +42,7 @@ draw_canny_contours(cv::Mat magnitude_image)
     cv::Mat canny_output;
     magnitude_image.copyTo( canny_output );
     // cv::blur( magnitude_image, canny_output, cv::Size(1,1) );
-    cv::Canny( canny_output, canny_output, 100, 200 );
+    cv::Canny( canny_output, canny_output, 10, 50 );
 
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Vec4i> hierarchy;
