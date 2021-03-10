@@ -35,46 +35,52 @@ wait_key()
 }
 
 
-// draw contours of canny edge detection
 cv::Mat
-draw_canny_contours(cv::Mat magnitude_image)
+filter_frequency_from_image(cv::Mat image)
 {
-    cv::Mat canny_output;
-    magnitude_image.copyTo( canny_output );
-    // cv::blur( magnitude_image, canny_output, cv::Size(3,3) );
-    cv::Canny( canny_output, canny_output, 10, 30 );
+    // initialize images
+    cv::Size input_image_size = image.size();
 
-    std::vector<std::vector<cv::Point>> contours;
-    std::vector<cv::Vec4i> hierarchy;
-    cv::findContours( canny_output, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );
+    // make padded image from input image
+    cv::Mat padded_image = create_padded_image( image );
+    image.release();
 
-    cv::Mat canvas = cv::Mat::zeros( canny_output.size(), CV_8U );
-    for (size_t i = 0; i < contours.size(); i++) {
-        cv::drawContours( canvas, contours, i, cv::Scalar(255), cv::FILLED, cv::LINE_8, hierarchy, 0 );
-    }
+    // make complex image from padded image
+    cv::Mat complex_image = create_complex_image( padded_image );
+    padded_image.release();
 
-    cv::imshow( WINDOW_NAME + " Contours Image", canvas );
-    write_img_to_file( canvas, "./out", "contours_" + output_image_filename);
+    // apply dft on the complex image
+    cv::dft( complex_image, complex_image );
 
-    canny_output.release();
-    return canvas;
-}
+    // make magnitude image from complex image
+    cv::Mat magnitude_image = create_magnitude_image( &complex_image );
 
+    // display normalized magnitude image
+    // cv::imshow( WINDOW_NAME + " Magnitude Image", magnitude_image );
 
-//
-cv::Mat
-frequency_filter(cv::Mat magnitude_image)
-{
-    cv::Mat canny_output = draw_canny_contours( magnitude_image );
-    cv::Mat mask = cv::Mat( canny_output.size(), CV_8U );
-    mask = cv::Scalar::all(255);
-    cv::circle( mask, cv::Point( mask.cols/2, mask.rows/2 ), 5, cv::Scalar(0), cv::FILLED );
+    // filter the periodic noise
+    cv::Mat freq_filter_image = create_frequency_mask( magnitude_image );
+    magnitude_image.release();
 
-    // apply the mask to magnitude image
-    cv::bitwise_and( canny_output, mask, canny_output );
+    cv::imshow( WINDOW_NAME + " Frequency Mask", freq_filter_image );
+    // write_img_to_file( freq_filter_image, "./out", "freq_mask_" + output_image_filename);
 
-    mask.release();
-    return canny_output;
+    // 'event loop' for keypresses
+    while (wait_key());
+
+    // apply magnitude to new complex image
+    complex_image = apply_magnitude( &complex_image, freq_filter_image );
+    freq_filter_image.release();
+
+    // apply inverse fourier transform
+    cv::idft( complex_image, complex_image );
+
+    // extract real plane and crop to size of original
+    cv::Mat normal_real_plane = extract_real_image( complex_image ) // @
+        ( cv::Rect( input_image_size, cv::Point(0, 0) ) );
+
+    complex_image.release();
+    return normal_real_plane;
 }
 
 
@@ -92,56 +98,19 @@ main(int argc, const char** argv)
     );
     if (parse_result != 1) return parse_result;
 
-    // initialize images
     cv::Mat input_image = open_image( input_image_filename, true );
-
     cv::imshow( WINDOW_NAME + " Input Image", input_image );
 
-    // make padded image from input image
-    cv::Mat padded_image = create_padded_image( input_image );
-    input_image.release();
+    cv::Mat filtered_image = filter_frequency_from_image( input_image );
 
-    // make complex image from padded image
-    cv::Mat complex_image = create_complex_image( padded_image );
-    padded_image.release();
-
-    // apply dft on the complex image
-    cv::dft( complex_image, complex_image );
-
-    // make magnitude image from complex image
-    cv::Mat magnitude_image = create_magnitude_image( &complex_image );
-
-    // display normalized magnitude image
-    cv::imshow( WINDOW_NAME + " Magnitude Image", magnitude_image );
-
-    // filter the periodic noise
-    cv::Mat freq_filter_image = frequency_filter( magnitude_image );
-    magnitude_image.release();
-
-    cv::imshow( WINDOW_NAME + " Frequency Mask", freq_filter_image );
-    write_img_to_file( freq_filter_image, "./out", "freq_mask_" + output_image_filename);
-
-    // 'event loop' for keypresses
-    while (wait_key());
-
-    // apply magnitude to new complex image
-    complex_image = apply_magnitude( &complex_image, freq_filter_image );
-    freq_filter_image.release();
-
-    // apply inverse fourier transform
-    cv::idft( complex_image, complex_image );
-
-    cv::Mat normal_real_plane = extract_real_image( complex_image );
-    complex_image.release();
-
-    cv::imshow( WINDOW_NAME + " Fixed Image", normal_real_plane );
-    write_img_to_file( normal_real_plane, "./out", output_image_filename );
+    cv::imshow( WINDOW_NAME + " Fixed Image", filtered_image );
+    write_img_to_file( filtered_image, "./out", output_image_filename );
 
     // 'event loop' for keypresses
     while (wait_key());
 
     cv::destroyAllWindows();
-    normal_real_plane.release();
+    filtered_image.release();
 
     return 0;
 }

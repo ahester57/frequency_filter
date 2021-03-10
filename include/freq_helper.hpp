@@ -18,5 +18,7 @@ cv::Mat apply_magnitude(cv::Mat* src, cv::Mat magnitude);
 cv::Mat extract_real_image(cv::Mat src);
 void swap_mat(cv::Mat* a, cv::Mat* b);
 void swap_quadrants(cv::Mat* src);
+cv::Mat draw_canny_contours(cv::Mat magnitude_image);
+cv::Mat create_frequency_mask(cv::Mat magnitude_image);
 
 #endif

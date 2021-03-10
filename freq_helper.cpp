@@ -85,8 +85,7 @@ apply_magnitude(cv::Mat* src, cv::Mat magnitude)
 {
     // threshold the magnitude image so all non-zero pixels are 1
     cv::Mat thresholded;
-    cv::bitwise_not( magnitude, thresholded );
-    cv::threshold( thresholded, thresholded, 0, 1, cv::THRESH_BINARY );
+    cv::threshold( magnitude, thresholded, 0, 1, cv::THRESH_BINARY );
 
     // multiply planes of complex images by threshold by applying as mask
     cv::Mat planes[2];
@@ -160,4 +159,48 @@ swap_quadrants(cv::Mat* src)
     q1.release();
     q2.release();
     q3.release();
+}
+
+
+// draw contours of canny edge detection
+cv::Mat
+draw_canny_contours(cv::Mat magnitude_image)
+{
+    cv::Mat canny_output;
+    magnitude_image.copyTo( canny_output );
+    cv::Canny( canny_output, canny_output, 10, 15 );
+
+    std::vector<std::vector<cv::Point>> contours;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::findContours( canny_output, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE );
+
+    cv::Mat canvas = cv::Mat::zeros( canny_output.size(), CV_8U );
+    for (size_t i = 0; i < contours.size(); i++) {
+        cv::drawContours( canvas, contours, i, cv::Scalar(255), cv::FILLED, cv::LINE_8, hierarchy, 0 );
+    }
+
+    // cv::imshow(" Contours Image", canvas );
+
+    canny_output.release();
+    return canvas;
+}
+
+
+// remove periodic noise from a frequency magnitude image
+cv::Mat
+create_frequency_mask(cv::Mat magnitude_image)
+{
+    // draw canny contours
+    cv::Mat canny_output = draw_canny_contours( magnitude_image );
+    // create contour mask (which contours to get rid of)
+    cv::Mat mask = cv::Mat( canny_output.size(), CV_8U );
+    mask = cv::Scalar::all(255);
+    // exclude the middle of the mask
+    cv::circle( mask, cv::Point( mask.cols/2, mask.rows/2 ), 2, cv::Scalar(0), cv::FILLED );
+    // apply the mask to magnitude image
+    cv::bitwise_and( canny_output, mask, canny_output );
+    mask.release();
+    // return the new magnitude image, outer frequencies filtered
+    cv::bitwise_not( canny_output, canny_output );
+    return canny_output;
 }
