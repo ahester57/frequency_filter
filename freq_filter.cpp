@@ -77,7 +77,11 @@ filter_frequency_from_image(cv::Mat image)
 
     // extract real plane and crop to size of original
     cv::Mat normal_real_plane = extract_real_image( complex_image );
-        //@ ( cv::Rect( input_image_size, cv::Point(0, 0) ) );
+    try {
+        normal_real_plane = normal_real_plane( cv::Rect( input_image_size, cv::Point(0, 0) ) );
+    } catch (...) {
+        // do nothing, no need to crop
+    }
 
     complex_image.release();
     return normal_real_plane;
