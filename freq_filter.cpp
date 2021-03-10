@@ -121,11 +121,7 @@ main(int argc, const char** argv)
 
     // blur the output if given 'b' flag
     if (blur_output) {
-        cv::Mat blurred_filtered;
-        cv::GaussianBlur( filtered_image, blurred_filtered, cv::Size(3, 3), 3 );
-        cv::addWeighted( filtered_image, 1.5, blurred_filtered, -0.3, 0, blurred_filtered );
-        cv::equalizeHist( blurred_filtered, filtered_image );
-        blurred_filtered.release();
+        cv::medianBlur( filtered_image, filtered_image, 3 );
     }
 
     // equalize the output if given 'e' flag
