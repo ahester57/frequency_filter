@@ -85,8 +85,8 @@ apply_magnitude(cv::Mat* src, cv::Mat magnitude)
 {
     // threshold the magnitude image so all non-zero pixels are 1
     cv::Mat thresholded;
-    magnitude.copyTo(thresholded);
-    cv::threshold( magnitude, thresholded, 0, 1, cv::THRESH_BINARY );
+    cv::bitwise_not( magnitude, thresholded );
+    cv::threshold( thresholded, thresholded, 0, 1, cv::THRESH_BINARY );
 
     // multiply planes of complex images by threshold by applying as mask
     cv::Mat planes[2];
