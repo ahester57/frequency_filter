@@ -92,14 +92,10 @@ apply_magnitude(cv::Mat* src, cv::Mat magnitude)
     cv::Mat planes[2];
     cv::split( *src, planes );
 
-    // planes[0].copyTo( planes[0], cv::Mat::zeros(planes[0].size(), CV_8U) );
     cv::Mat real;
     planes[0].copyTo( real , thresholded );
-    // cv::bitwise_and( planes[0], cv::Mat::zeros(planes[0].size(), CV_32F), real );
     cv::Mat img;
-    // cv::bitwise_and( planes[0], cv::Mat_<float>( thresholded ), real );
     planes[1].copyTo( img, thresholded );
-    // cv::bitwise_and( planes[1], cv::Mat_<float>( thresholded ), img );
     write_img_to_file_as_text<float>( cv::Mat_<float>( thresholded ) , "./out", "threhs.tif");
 
     // and merge them into a new complex image
