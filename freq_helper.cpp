@@ -225,9 +225,7 @@ cv::Mat
 manual_filter(cv::Mat magnitude_image)
 {
     // display normalized magnitude image
-    cv::threshold( magnitude_image, magnitude_image, 1, 255, cv::THRESH_BINARY );
-    // cv::log( magnitude_image, magnitude_image)
-    // cv::blur( magnitude_image, magnitude_image, cv::Size(3, 3) );
+    // cv::threshold( magnitude_image, magnitude_image, 1, 255, cv::THRESH_BINARY );
     cv::imshow( "Magnitude Image", magnitude_image );
     // initialize mask
     cv::Mat mask = cv::Mat( magnitude_image.size(), CV_8U );
