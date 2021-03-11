@@ -16,7 +16,8 @@ parse_arguments(
     std::string* output_image_filename,
     bool* double_input_size,
     bool* blur_output,
-    bool* equalize_output
+    bool* equalize_output,
+    bool* manual_mode
 ) {
     cv::String keys =
         "{@input_image    |<none>| Input Image}"
@@ -24,6 +25,7 @@ parse_arguments(
         "{double d        |      | Double Input Image Size}"
         "{blur b          |      | Blur Output Image}"
         "{equalize e      |      | Equalize Output Image}"
+        "{manual m        |      | Manual Filter Mode}"
         "{help h          |      | Show Help Message}";
 
     cv::CommandLineParser parser(argc, argv, keys);
@@ -75,6 +77,13 @@ parse_arguments(
         *equalize_output = parser.has("e");
     } catch (...) {
         std::cerr << "Failed to parse equalize argument!:" << std::endl;
+        return -1;
+    }
+
+    try {
+        *manual_mode = parser.has("m");
+    } catch (...) {
+        std::cerr << "Failed to parse manual argument!:" << std::endl;
         return -1;
     }
 

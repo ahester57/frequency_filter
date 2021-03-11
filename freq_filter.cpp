@@ -36,7 +36,23 @@ wait_key()
 
 
 cv::Mat
-filter_frequency_from_image(cv::Mat image)
+manual_filter(cv::Mat magnitude_image)
+{
+    // init_callback();
+    while (wait_key());
+    return ~magnitude_image;
+}
+
+
+cv::Mat
+auto_filter(cv::Mat magnitude_image)
+{
+    return create_frequency_mask( magnitude_image );
+}
+
+
+cv::Mat
+filter_frequency(cv::Mat image, bool manual_mode)
 {
     // initialize images
     cv::Size input_image_size = image.size();
@@ -59,18 +75,19 @@ filter_frequency_from_image(cv::Mat image)
     // cv::imshow( WINDOW_NAME + " Magnitude Image", magnitude_image );
 
     // filter the periodic noise
-    cv::Mat freq_filter_image = create_frequency_mask( magnitude_image );
+    cv::Mat freq_filter_mask = manual_mode ? manual_filter( magnitude_image)
+                                            : auto_filter( magnitude_image );
     magnitude_image.release();
 
-    cv::imshow( WINDOW_NAME + " Frequency Mask", freq_filter_image );
+    cv::imshow( WINDOW_NAME + " Frequency Mask", freq_filter_mask );
     // write_img_to_file( freq_filter_image, "./out", "freq_mask_" + output_image_filename);
 
     // 'event loop' for keypresses
     while (wait_key());
 
     // apply magnitude to new complex image
-    complex_image = apply_magnitude( &complex_image, freq_filter_image );
-    freq_filter_image.release();
+    complex_image = apply_magnitude( &complex_image, freq_filter_mask );
+    freq_filter_mask.release();
 
     // apply inverse fourier transform
     cv::idft( complex_image, complex_image );
@@ -96,6 +113,7 @@ main(int argc, const char** argv)
     bool double_input_size;
     bool blur_output;
     bool equalize_output;
+    bool manual_mode;
 
     // parse and save command line args
     int parse_result = parse_arguments(
@@ -104,7 +122,8 @@ main(int argc, const char** argv)
         &output_image_filename,
         &double_input_size,
         &blur_output,
-        &equalize_output
+        &equalize_output,
+        &manual_mode
     );
     if (parse_result != 1) return parse_result;
 
@@ -117,7 +136,7 @@ main(int argc, const char** argv)
 
     cv::imshow( WINDOW_NAME + " Input Image", input_image );
 
-    cv::Mat filtered_image = filter_frequency_from_image( input_image );
+    cv::Mat filtered_image = filter_frequency( input_image, manual_mode );
 
     // blur the output if given 'b' flag
     if (blur_output) {

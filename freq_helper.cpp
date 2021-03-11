@@ -10,8 +10,34 @@
 #include <vector>
 
 #include "./include/freq_helper.hpp"
-    #include "./include/dir_func.hpp"
-    #include "./include/string_helper.hpp"
+    // #include "./include/dir_func.hpp"
+    // #include "./include/string_helper.hpp"
+
+
+// draw zeros on image
+void
+mouse_callback_draw_zeros(int event, int x, int y, int d, void* userdata)
+{
+    cv::Mat* magnitude_image = (cv::Mat*) userdata;
+
+    switch (event) {
+        case cv::EVENT_LBUTTONUP:
+            // push the new point
+            // draw a circle mask at chosen points
+            cv::circle( *magnitude_image, cv::Point2f( x, y ), 2, cv::Scalar(0), cv::FILLED );
+            // show the copy of the image
+            cv::imshow( "tmp:", *magnitude_image );
+            break;
+    }
+}
+
+
+// assign mouse callbacks
+void
+init_callback(std::string* window_name, cv::Mat* magnitude_image)
+{
+    cv::setMouseCallback( *window_name, mouse_callback_draw_zeros, magnitude_image );
+}
 
 
 // Pad image for the optimal DFT size
@@ -95,7 +121,7 @@ apply_magnitude(cv::Mat* src, cv::Mat magnitude)
     planes[0].copyTo( real , thresholded );
     cv::Mat img;
     planes[1].copyTo( img, thresholded );
-    write_img_to_file_as_text<float>( cv::Mat_<float>( thresholded ) , "./out", "threhs.tif");
+    // write_img_to_file_as_text<float>( cv::Mat_<float>( thresholded ) , "./out", "threhs.tif");
 
     // and merge them into a new complex image
     cv::Mat planes2[] = { real, img };
