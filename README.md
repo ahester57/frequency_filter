@@ -28,8 +28,16 @@ transform to convert the image back in spatial domain and display it.
 ```
 Usage: freq_filter.exe [params] input_image output_image
 
+        -b, --blur
+                Blur Output Image
+        -d, --double
+                Double Input Image Size
+        -e, --equalize
+                Equalize Output Image
         -h, --help (value:true)
                 Show Help Message
+        -m, --manual
+                Manual Filter Mode
 
         input_image (value:<none>)
                 Input Image
