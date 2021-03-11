@@ -21,36 +21,6 @@ const std::string WINDOW_NAME = "Frequency Domain Filtering";
 std::string output_image_filename;
 
 
-// 'event loop' for keypresses
-// call in a while loop to only register q or <esc>
-int
-wait_key()
-{
-    char key_pressed = cv::waitKey(0) & 255;
-    // 'q' or  <escape> quits out
-    if (key_pressed == 27 || key_pressed == 'q') {
-        return 0;
-    }
-    return 1;
-}
-
-
-cv::Mat
-manual_filter(cv::Mat magnitude_image)
-{
-    // init_callback();
-    while (wait_key());
-    return ~magnitude_image;
-}
-
-
-cv::Mat
-auto_filter(cv::Mat magnitude_image)
-{
-    return create_frequency_mask( magnitude_image );
-}
-
-
 cv::Mat
 filter_frequency(cv::Mat image, bool manual_mode)
 {
@@ -71,12 +41,9 @@ filter_frequency(cv::Mat image, bool manual_mode)
     // make magnitude image from complex image
     cv::Mat magnitude_image = create_magnitude_image( &complex_image );
 
-    // display normalized magnitude image
-    // cv::imshow( WINDOW_NAME + " Magnitude Image", magnitude_image );
-
     // filter the periodic noise
-    cv::Mat freq_filter_mask = manual_mode ? manual_filter( magnitude_image)
-                                            : auto_filter( magnitude_image );
+    cv::Mat freq_filter_mask = manual_mode ? manual_filter( magnitude_image )
+                                             : auto_filter( magnitude_image );
     magnitude_image.release();
 
     cv::imshow( WINDOW_NAME + " Frequency Mask", freq_filter_mask );

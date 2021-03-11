@@ -10,9 +10,7 @@
 #include <vector>
 #include <iostream>
 
-
-void mouse_callback_draw_zeros(int event, int x, int y, int d, void* userdata);
-void init_callback(std::string* window_name, cv::Mat* magnitude_image);
+int wait_key();
 cv::Mat create_padded_image(cv::Mat src);
 cv::Mat create_complex_image(cv::Mat src);
 cv::Mat create_magnitude_image(cv::Mat* src);
@@ -21,6 +19,9 @@ cv::Mat extract_real_image(cv::Mat src);
 void swap_mat(cv::Mat* a, cv::Mat* b);
 void swap_quadrants(cv::Mat* src);
 cv::Mat draw_canny_contours(cv::Mat magnitude_image);
-cv::Mat create_frequency_mask(cv::Mat magnitude_image);
+cv::Mat auto_filter(cv::Mat magnitude_image);
+cv::Mat manual_filter(cv::Mat magnitude_image);
+void mouse_callback_draw_zeros(int event, int x, int y, int d, void* userdata);
+void init_callback(std::string window_name, cv::Mat* frequency_mask);
 
 #endif

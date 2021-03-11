@@ -14,29 +14,17 @@
     // #include "./include/string_helper.hpp"
 
 
-// draw zeros on image
-void
-mouse_callback_draw_zeros(int event, int x, int y, int d, void* userdata)
+// event loop
+// call in a while loop to only register q or <esc>
+int
+wait_key()
 {
-    cv::Mat* magnitude_image = (cv::Mat*) userdata;
-
-    switch (event) {
-        case cv::EVENT_LBUTTONUP:
-            // push the new point
-            // draw a circle mask at chosen points
-            cv::circle( *magnitude_image, cv::Point2f( x, y ), 2, cv::Scalar(0), cv::FILLED );
-            // show the copy of the image
-            cv::imshow( "tmp:", *magnitude_image );
-            break;
+    char key_pressed = cv::waitKey(0) & 255;
+    // 'q' or  <escape> quits out
+    if (key_pressed == 27 || key_pressed == 'q') {
+        return 0;
     }
-}
-
-
-// assign mouse callbacks
-void
-init_callback(std::string* window_name, cv::Mat* magnitude_image)
-{
-    cv::setMouseCallback( *window_name, mouse_callback_draw_zeros, magnitude_image );
+    return 1;
 }
 
 
@@ -214,7 +202,7 @@ draw_canny_contours(cv::Mat magnitude_image)
 
 // remove periodic noise from a frequency magnitude image
 cv::Mat
-create_frequency_mask(cv::Mat magnitude_image)
+auto_filter(cv::Mat magnitude_image)
 {
     // draw canny contours
     cv::Mat canny_output = draw_canny_contours( magnitude_image );
@@ -229,4 +217,50 @@ create_frequency_mask(cv::Mat magnitude_image)
     // return the new magnitude image, outer frequencies filtered
     cv::bitwise_not( canny_output, canny_output );
     return canny_output;
+}
+
+
+// remove periodic noise manually
+cv::Mat
+manual_filter(cv::Mat magnitude_image)
+{
+    // display normalized magnitude image
+    cv::threshold( magnitude_image, magnitude_image, 1, 255, cv::THRESH_BINARY );
+    // cv::log( magnitude_image, magnitude_image)
+    // cv::blur( magnitude_image, magnitude_image, cv::Size(3, 3) );
+    cv::imshow( "Magnitude Image", magnitude_image );
+    // initialize mask
+    cv::Mat mask = cv::Mat( magnitude_image.size(), CV_8U );
+    mask = cv::Scalar::all(255);
+    // initialize mouse callback
+    init_callback( "Magnitude Image", &mask );
+    // wait for q
+    while (wait_key());
+    return mask;
+}
+
+
+// draw zeros on image
+void
+mouse_callback_draw_zeros(int event, int x, int y, int d, void* userdata)
+{
+    cv::Mat* frequency_mask = (cv::Mat*) userdata;
+
+    switch (event) {
+        case cv::EVENT_LBUTTONUP:
+            // push the new point
+            // draw a circle mask at chosen points
+            cv::circle( *frequency_mask, cv::Point2f( x, y ), 4, cv::Scalar(0), cv::FILLED );
+            // show the copy of the image
+            cv::imshow( "tmp:", *frequency_mask );
+            break;
+    }
+}
+
+
+// assign mouse callbacks
+void
+init_callback(std::string window_name, cv::Mat* frequency_mask)
+{
+    cv::setMouseCallback( window_name, mouse_callback_draw_zeros, frequency_mask );
 }
